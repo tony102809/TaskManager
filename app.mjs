@@ -16,6 +16,9 @@ app.set('view engine', 'hbs');
 // with import.meta.url
 
 // TODO: use middleware required for reading body
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDirectory = path.join(__dirname, 'public');
+app.use(express.static(publicDirectory));
 
 // The global list to store all tasks to be rendered
 let taskList = [];
@@ -83,5 +86,13 @@ function sortTasks(req, l) {
 function pinnedTasks(l) {
   return [...l].sort((a, b)=>b.pinned-a.pinned);
 }
+
+app.get('/', (req, res) => {
+  res.render('index');
+});
+
+app.get('/add', (req, res) => {
+  res.render('index');
+});
 
 app.listen(3000);
