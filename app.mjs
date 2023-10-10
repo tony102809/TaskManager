@@ -5,6 +5,8 @@ import {readFile, readdir} from 'fs';
 import {fileURLToPath} from 'url';
 import * as path from 'path';
 import {Task} from './task.mjs';
+import { urlencoded } from 'express';
+
 
 const app = express();
 // set hbs engine
@@ -19,6 +21,17 @@ app.set('view engine', 'hbs');
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDirectory = path.join(__dirname, 'public');
 app.use(express.static(publicDirectory));
+
+//PART 3: Middleware and Logging
+app.use(urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Query:', req.query);
+  console.log('Body:', req.body);
+  next(); 
+});
 
 // The global list to store all tasks to be rendered
 let taskList = [];
