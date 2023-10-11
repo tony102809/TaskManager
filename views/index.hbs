@@ -1,3 +1,26 @@
-<h2>
-  TEST
-</h2>
+<table>
+  <tr>
+    <th>Pinned</th>
+    <th>Progress</th>
+    <th>Title</th>
+    <th>Due Date</th>
+    <th>Priority</th>
+    <th>Tags</th>
+  </tr>
+  <tbody>
+    {{#each tasks}}
+    <tr>
+      <td>{{#if pinned}}📌{{/if}}</td>
+      <td>{{progress}}</td>
+      <td>{{title}}</td>
+      <td>{{due-date}}</td>
+      <td>{{priority}}</td>
+      <td>
+        {{#each tags}}
+        <span class="tag">{{this}}</span>
+        {{/each}}
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

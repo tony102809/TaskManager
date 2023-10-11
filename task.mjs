@@ -6,8 +6,14 @@ class Task {
    * @param {Object} task, with appropriate fields of a task
    */
   constructor(task) {
+    this.title = task.title;
+    this.description = task.description;
+    this.priority = task.priority;
     this['due-date'] = this.formatDate(new Date(task['due-date']));
-    // TODO: add more fields required
+    this.pinned = task.pinned;
+    this.tags = task.tags;
+    this.progress = task.progress;
+
   }
 
   /**
@@ -15,6 +21,7 @@ class Task {
    * @param {String} tag, the given single tag to be checked
    */
   hasTag(tag) {
+    return this.tags.includes(tag);
   }
 
   /**

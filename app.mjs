@@ -6,6 +6,8 @@ import {fileURLToPath} from 'url';
 import * as path from 'path';
 import {Task} from './task.mjs';
 import { urlencoded } from 'express';
+import fs from 'fs';
+
 
 
 const app = express();
@@ -100,8 +102,62 @@ function pinnedTasks(l) {
   return [...l].sort((a, b)=>b.pinned-a.pinned);
 }
 
+/**
+ * Part 4, Read tasks from static files
+ */
+/*
+function loadTasks() {
+  fs.readdir(readingPath, (err, files) => {
+    files.forEach((file) => {
+      const filePath = path.join(readingPath, file);
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        const taskData = JSON.parse(data);
+        const task = new Task(taskData);
+        taskList.push(task);
+      });
+    });
+  });
+}
+loadTasks();
+*/
+function loadTasks(callback) {
+  fs.readdir(readingPath, (err, files) => {
+
+    const tasks = [];
+
+    function readFile(index) {
+      if (index >= files.length) {
+        // All files have been read, call the callback with the tasks
+        callback(tasks);
+        return;
+      }
+
+      const filePath = path.join(readingPath, files[index]);
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        const taskData = JSON.parse(data);
+        const task = new Task(taskData);
+        tasks.push(task);
+        
+
+        // Read the next file
+        readFile(index + 1);
+      });
+    }
+
+    // Start reading files from the first one
+    readFile(0);
+  });
+}
+
+
+/**
+ * app.get() functions below
+ */
 app.get('/', (req, res) => {
-  res.render('index');
+  loadTasks((loadedTasks) => {
+    taskList = loadedTasks;
+    res.render('index', { tasks: taskList });
+  });
 });
 
 app.get('/add', (req, res) => {
@@ -109,3 +165,5 @@ app.get('/add', (req, res) => {
 });
 
 app.listen(3000);
+
+
