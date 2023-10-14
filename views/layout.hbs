@@ -13,6 +13,19 @@
         <a href="/add" class="button">Add Task</a>
       </nav>
       <h1>Task Manager</h1>
+
+ <!-- part 5, filtering -->
+<form action="/filter" method="get">
+  <label for="titleQ">Filter by Title:</label>
+  <input type="text" id="titleQ" name="titleQ">
+
+  <label for="tagQ">Filter by Tag:</label>
+  <input type="text" id="tagQ" name="tagQ">
+  
+  <button type="search">Search</button>
+  <button type="clear">Clear All</button>
+</form>
+
       <h2>My Tasks:</h2>
     </header>
 

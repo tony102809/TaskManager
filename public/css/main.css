@@ -19,13 +19,13 @@ body, h1, h2, p {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
   
-  /* Style the navigation bar */
+  /*navigation bar */
   nav {
     text-align: left;
     padding: 10px;
   }
   
-  /* Style the logo image */
+  /* logo  */
   .logo {
     width: 100px;
     height: 100px;
@@ -34,7 +34,7 @@ body, h1, h2, p {
     margin-right: 20px;
   }
   
-  /* Style the navigation buttons as rectangular buttons */
+  /*navigation buttons*/
   .button {
     display: inline-block;
     padding: 10px 20px;
@@ -45,6 +45,7 @@ body, h1, h2, p {
     border-radius: 5px;
     margin-right: 10px;
   }
+  
   
   .button:hover {
     background-color: #0056b3;

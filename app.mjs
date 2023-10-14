@@ -102,24 +102,6 @@ function pinnedTasks(l) {
   return [...l].sort((a, b)=>b.pinned-a.pinned);
 }
 
-/**
- * Part 4, Read tasks from static files
- */
-/*
-function loadTasks() {
-  fs.readdir(readingPath, (err, files) => {
-    files.forEach((file) => {
-      const filePath = path.join(readingPath, file);
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        const taskData = JSON.parse(data);
-        const task = new Task(taskData);
-        taskList.push(task);
-      });
-    });
-  });
-}
-loadTasks();
-*/
 function loadTasks(callback) {
   fs.readdir(readingPath, (err, files) => {
 
@@ -153,12 +135,72 @@ function loadTasks(callback) {
 /**
  * app.get() functions below
  */
+
+
+
 app.get('/', (req, res) => {
   loadTasks((loadedTasks) => {
     taskList = loadedTasks;
+
+    let pinnedTasks = [];
+    let unpinnedTasks = [];
+
+    // Split tasks into pinned and unpinned
+    for (let i = 0; i < taskList.length; i++) {
+      if (taskList[i].pinned) {
+        pinnedTasks.push(taskList[i]);
+      } else {
+        unpinnedTasks.push(taskList[i]);
+      }
+    }
+
+
+    const sortBy = req.query['sort-by'];
+    const sortOrder = req.query['sort-order'];
+
+    // Check if sorting parameters are provided
+    if (sortBy === 'due-date' || sortBy === 'priority') {
+      pinnedTasks = sortTasks(req, pinnedTasks); 
+      unpinnedTasks = sortTasks(req, unpinnedTasks);    
+    }
+
+    const sortedTasks = pinnedTasks.concat(unpinnedTasks);
+
+    res.render('index', { tasks: sortedTasks });
+  });
+});
+
+
+app.get('/filter', (req, res) => {
+  loadTasks((loadedTasks) => {
+    taskList = loadedTasks;
+
+    // Get the filter criteria from the query parameters
+    const titleQ = req.query['titleQ'];
+    const tagQ = req.query['tagQ'];
+
+
+    if(titleQ && tagQ){
+      taskList = taskList.filter(task => task.title.toLowerCase().includes(titleQ.toLowerCase()));
+      taskList = taskList.filter(task => task.tags.includes(tagQ));
+    }
+    else{
+      // Apply the title filter if titleQ is provided
+      if (titleQ) {
+        taskList = taskList.filter(task => task.title.toLowerCase().includes(titleQ.toLowerCase()));
+      }
+
+      // Apply the tag filter if tagQ is provided
+      if (tagQ) {
+        taskList = taskList.filter(task => task.tags.includes(tagQ));
+      }
+
+    }
+    // Render the updated task list
     res.render('index', { tasks: taskList });
   });
 });
+
 
 app.get('/add', (req, res) => {
   res.render('index');
