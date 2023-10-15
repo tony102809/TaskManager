@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Task</title>
+    <style>
+        div {
+            margin-bottom: 10px; /* Add vertical margin */
+        }
+    </style>
+</head>
+<body>
+    <h1>Add a New Task</h1>
+    <form action="/add" method="post">
+        <div>
+            <label for="title">Title:</label>
+            <input type="text" name="title" required>
+        </div>
+
+        <div>
+            <label for="description">Description:</label>
+            <textarea name="description"></textarea>
+        </div>
+
+        <div>
+            <label for="priority">Priority:</label>
+            <select name="priority">
+                <option value="1">1 (least urgent)</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5 (most urgent)</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="due-date">Due Date:</label>
+            <input type="date" name="due-date" required>
+        </div>
+    
+        <div>
+            <label for="pinned">Pinned:</label>
+            <input type="radio" name="pinned" value="true" required> Yes
+            <input type="radio" name="pinned" value="false" required> No
+        </div>
+
+        <div>
+            <label for="tags">Tags (separated by commas):</label>
+            <input type="text" name="tags">
+        </div>
+
+        <div>
+            <label for="progress">Progress:</label>
+            <select name="progress">
+                <option value="not-started">Not Started</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+            </select>
+        </div>
+
+        <div>
+            <input type="submit" value="Add Task">
+
+        </div>
+    </form>
+</body>
+</html>

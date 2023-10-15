@@ -103,31 +103,38 @@ function pinnedTasks(l) {
 }
 
 function loadTasks(callback) {
-  fs.readdir(readingPath, (err, files) => {
+  readFromFS(readingPath, (tasks) => {
+    taskList = tasks;
+    callback(taskList);
+  });
+}
 
-    const tasks = [];
+function readFromFS(saved_task_path, onReadingDone) {
+  const tasks = [];
 
-    function readFile(index) {
-      if (index >= files.length) {
-        // All files have been read, call the callback with the tasks
-        callback(tasks);
-        return;
-      }
+  readdir(saved_task_path, (err, files) => {
+    let count = 0;
+    const nFiles = files.length;
 
-      const filePath = path.join(readingPath, files[index]);
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        const taskData = JSON.parse(data);
-        const task = new Task(taskData);
+    for (const fileName of files) {
+      const filePath = resolve(saved_task_path, fileName);
+
+      readFile(filePath, 'utf8', (err, data) => {
+        ++count;
+
+        if (err) {
+          throw err;
+        }
+
+        const fileInJson = JSON.parse(data.toString());
+        const task = new Task(fileInJson);
         tasks.push(task);
-        
 
-        // Read the next file
-        readFile(index + 1);
+        if (count === nFiles) {
+          onReadingDone(tasks);
+        }
       });
     }
-
-    // Start reading files from the first one
-    readFile(0);
   });
 }
 
@@ -136,11 +143,7 @@ function loadTasks(callback) {
  * app.get() functions below
  */
 
-
-
 app.get('/', (req, res) => {
-  loadTasks((loadedTasks) => {
-    taskList = loadedTasks;
 
     let pinnedTasks = [];
     let unpinnedTasks = [];
@@ -167,45 +170,97 @@ app.get('/', (req, res) => {
     const sortedTasks = pinnedTasks.concat(unpinnedTasks);
 
     res.render('index', { tasks: sortedTasks });
-  });
+  
 });
 
 
 app.get('/filter', (req, res) => {
-  loadTasks((loadedTasks) => {
-    taskList = loadedTasks;
+  
+  const titleQ = req.query['titleQ'];
+  const tagQ = req.query['tagQ'];
 
-    // Get the filter criteria from the query parameters
-    const titleQ = req.query['titleQ'];
-    const tagQ = req.query['tagQ'];
+  let filteredTasks = [...taskList]; 
 
+  if (titleQ) {
+    filteredTasks = filteredTasks.filter(task => task.title.toLowerCase().includes(titleQ.toLowerCase()));
+  }
 
-    if(titleQ && tagQ){
-      taskList = taskList.filter(task => task.title.toLowerCase().includes(titleQ.toLowerCase()));
-      taskList = taskList.filter(task => task.tags.includes(tagQ));
-    }
-    else{
-      // Apply the title filter if titleQ is provided
-      if (titleQ) {
-        taskList = taskList.filter(task => task.title.toLowerCase().includes(titleQ.toLowerCase()));
-      }
+  if (tagQ) {
+    filteredTasks = filteredTasks.filter(task => task.hasTag(tagQ));
+  }
 
-      // Apply the tag filter if tagQ is provided
-      if (tagQ) {
-        taskList = taskList.filter(task => task.tags.includes(tagQ));
-      }
-
-    }
-    // Render the updated task list
-    res.render('index', { tasks: taskList });
-  });
+  res.render('index', { tasks: filteredTasks });
 });
+
 
 
 app.get('/add', (req, res) => {
-  res.render('index');
+  res.render('addTask'); // Render the form for adding a new task
 });
 
-app.listen(3000);
+app.post('/add', (req, res) => {
+
+  const {
+    title,
+    description,
+    priority,
+    'due-date': dueDate,
+    pinned,
+    tags,
+    progress
+  } = req.body;
+
+  // Create a new task object
+  const newTaskData = {
+    title,
+    description,
+    priority: parseInt(priority),
+    'due-date': new Date(dueDate), // Convert the date string to a Date object
+    pinned: pinned === 'true',
+    tags: tags.split(',').map(tag => tag.trim()), 
+    progress
+  };
+
+  // Create a new Task object
+  const newTask = new Task(newTaskData);
+
+  // Add the new task to the in-memory task list
+  taskList.push(newTask);
+
+  //Same sorting algorithm as above ^^
+  let pinnedTasks = [];
+  let unpinnedTasks = [];
+
+  // Split tasks into pinned and unpinned
+  for (let i = 0; i < taskList.length; i++) {
+    if (taskList[i].pinned) {
+      pinnedTasks.push(taskList[i]);
+    } else {
+      unpinnedTasks.push(taskList[i]);
+    }
+  }
+
+
+  const sortBy = req.query['sort-by'];
+  const sortOrder = req.query['sort-order'];
+
+  // Check if sorting parameters are provided
+  if (sortBy === 'due-date' || sortBy === 'priority') {
+    pinnedTasks = sortTasks(req, pinnedTasks); 
+    unpinnedTasks = sortTasks(req, unpinnedTasks);    
+  }
+
+  const sortedTasks = pinnedTasks.concat(unpinnedTasks);
+
+  res.render('index', { tasks: sortedTasks });
+
+});
+
+
+loadTasks((loadedTasks) => {
+  taskList = loadedTasks;
+  // Start the server only after loading tasks
+  app.listen(3000);
+});
 
 
